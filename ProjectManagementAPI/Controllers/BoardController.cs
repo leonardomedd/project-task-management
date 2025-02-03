@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using ProjectManagementAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using ProjectManagementAPI.Models;
 using System.Collections.Generic;
 using System.Linq;
 
