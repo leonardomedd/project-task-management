@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ProjectManagementAPI.Models;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectManagementAPI.Controllers
 {
@@ -16,21 +18,35 @@ namespace ProjectManagementAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Task>>> GetTasks()
+        public ActionResult<IEnumerable<ProjectManagementAPI.Models.Task>> GetTasks()
         {
-            return await _context.Tasks.ToListAsync();
+            return _context.Tasks.ToList();
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<ProjectManagementAPI.Models.Task> GetTask(int id)
+        {
+            var task = _context.Tasks.Find(id);
+
+            if (task == null)
+            {
+                return NotFound();
+            }
+
+            return task;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Task>> CreateTask(Task task)
+        public ActionResult<ProjectManagementAPI.Models.Task> PostTask(ProjectManagementAPI.Models.Task task)
         {
             _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetTasks), new { id = task.Id }, task);
+            _context.SaveChanges();
+
+            return CreatedAtAction("GetTask", new { id = task.Id }, task);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id, Task task)
+        public IActionResult PutTask(int id, ProjectManagementAPI.Models.Task task)
         {
             if (id != task.Id)
             {
@@ -38,43 +54,25 @@ namespace ProjectManagementAPI.Controllers
             }
 
             _context.Entry(task).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TaskExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            _context.SaveChanges();
 
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public IActionResult DeleteTask(int id)
         {
-            var task = await _context.Tasks.FindAsync(id);
+            var task = _context.Tasks.Find(id);
+
             if (task == null)
             {
                 return NotFound();
             }
 
             _context.Tasks.Remove(task);
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+            _context.SaveChanges();
 
-        private bool TaskExists(int id)
-        {
-            return _context.Tasks.Any(e => e.Id == id);
+            return NoContent();
         }
     }
 }

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ProjectManagementAPI.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ProjectManagementAPI.Controllers
 {
@@ -16,30 +18,60 @@ namespace ProjectManagementAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Board>>> GetBoards()
+        public ActionResult<IEnumerable<Board>> GetBoards()
         {
-            return await _context.Boards.Include(b => b.Tasks).ToListAsync();
+            return _context.Boards.ToList();
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<Board> GetBoard(int id)
+        {
+            var board = _context.Boards.Find(id);
+
+            if (board == null)
+            {
+                return NotFound();
+            }
+
+            return board;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Board>> CreateBoard(Board board)
+        public ActionResult<Board> PostBoard(Board board)
         {
             _context.Boards.Add(board);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetBoards), new { id = board.Id }, board);
+            _context.SaveChanges();
+
+            return CreatedAtAction("GetBoard", new { id = board.Id }, board);
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult PutBoard(int id, Board board)
+        {
+            if (id != board.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(board).State = EntityState.Modified;
+            _context.SaveChanges();
+
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBoard(int id)
+        public IActionResult DeleteBoard(int id)
         {
-            var board = await _context.Boards.FindAsync(id);
+            var board = _context.Boards.Find(id);
+
             if (board == null)
             {
                 return NotFound();
             }
 
             _context.Boards.Remove(board);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
+
             return NoContent();
         }
     }
