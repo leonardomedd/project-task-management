@@ -1,0 +1,3 @@
+[submodule "project-management-frontend"]
+    path = project-management-frontend
+    url = https://github.com/leonardomedd/project-task-management.git
